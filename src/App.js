@@ -1,25 +1,75 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from 'react';
+import Detail from './Details';
+import './styles.css';
 
-function App() {
+export default function App() {
+  const [data, setdata] = useState([]);
+  const [editedText, setEditedText] = useState('');
+
+  const handle = (value) => {
+    setdata([...data, { text: value, isEditable: false,ischecked:false }]);
+  };
+
+  const handleCheckboxChange = (index) => {
+    setdata((prevData)=>{
+      const ups = prevData.map((task,i)=>{
+        if(index==i){
+          return {...task,ischecked:true}
+        }
+        return task
+      });
+      return ups;
+   });
+    
+    setTimeout(() => { const updatedData = data.filter((_, i) => i != index);
+      setdata(updatedData);}, 400);
+  };
+
+  const handleEditButtonClick = (index) => {
+    setdata((prevData) => {
+      const newData = [...prevData];
+      newData[index] = { ...newData[index], isEditable: true };
+      return newData;
+    });
+    setEditedText(data[index].text);
+  };
+
+  const handleOkButtonClick = (index) => {
+    setdata((prevData) => {
+      const newData = [...prevData];
+      newData[index] = { text: editedText, isEditable: false };
+      return newData;
+    });
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <Detail onSubmit={handle} />
+      {data.map((task, index) => (
+        <li key={index}>
+          {task.isEditable ? (
+            <input
+              type="text"
+              value={editedText}
+              onChange={(e) => setEditedText(e.target.value)}
+            />
+          ) : (
+            <span>{task.text}</span>
+          )}
+          <input
+            type="checkbox"
+            checked={task.ischecked|| false}
+            onChange={() => {
+              handleCheckboxChange(index);
+            }}
+          />
+          {task.isEditable ? (
+            <button onClick={() => handleOkButtonClick(index)}>Ok</button>
+          ) : (
+            <button onClick={() => handleEditButtonClick(index)}>Edit</button>
+          )}
+        </li>
+      ))}
+    </>
   );
 }
-
-export default App;
